@@ -3,13 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JaysScorecard V56</title>
+    <title>Scorecard Pro</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Scorecard">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">    
-    <link rel="manifest" href='data:application/manifest+json,{"name":"JaysUltimateScorecard","short_name":"JsScorecard","start_url":".","display":"standalone","background_color":"#f0f2f5","theme_color":"#27ae60"}'>
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link rel="manifest" href='data:application/manifest+json,{
+        "name": "Scorecard Pro",
+        "short_name": "Scorecard",
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#f0f2f5",
+        "theme_color": "#27ae60",
+        "icons": [
+            {
+                "src": "apple-touch-icon.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": "apple-touch-icon.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }'>
 
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
@@ -55,6 +76,7 @@
     <button class="calc-btn" onclick="calcInput('0')" style="grid-column:span 2">0</button><button class="calc-btn op" onclick="calcEval()">=</button><button class="calc-btn op" onclick="calcInput('*')">×</button>
     <button class="calc-btn" style="background:#95a5a6; grid-column:span 2" onclick="closeModal('calcModal')">Cancel</button><button class="calc-btn" style="background:var(--accent); grid-column:span 2" onclick="calcApply()">Apply Total</button>
 </div></div></div>
+
 <div id="confirmModal" class="modal"><div class="modal-content"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modal-btns-stack" style="flex-direction:row"><button onclick="closeModal('confirmModal')" style="background:#95a5a6; flex:1">Cancel</button><button id="confirmActionBtn" style="background:#e74c3c; flex:1">Confirm</button></div></div></div>
 <div id="saveGameModal" class="modal"><div class="modal-content"><h3>Save Game</h3><input type="text" id="saveGameName"><div class="modal-btns-stack"><button onclick="confirmSaveGame(false)">Update Current</button><button onclick="confirmSaveGame(true)" style="background:#3498db">Save New Copy</button><button onclick="closeModal('saveGameModal')" style="background:#95a5a6">Cancel</button></div></div></div>
 <div id="libraryModal" class="modal"><div class="modal-content"><h3>📚 Library</h3><div id="saveList"></div><button onclick="closeModal('libraryModal')" style="background:#95a5a6; margin-top:20px; width:100%">Close</button></div></div>
@@ -91,11 +113,11 @@
 </div>
 
 <script>
-    let players = JSON.parse(localStorage.getItem('v56_players')) || [];
-    let rounds = JSON.parse(localStorage.getItem('v56_rounds')) || [];
-    let savedGames = JSON.parse(localStorage.getItem('v56_library')) || [];
-    let activeGameId = localStorage.getItem('v56_active_id') || null;
-    let isDark = localStorage.getItem('v56_dark') === 'true';
+    let players = JSON.parse(localStorage.getItem('v57_players')) || [];
+    let rounds = JSON.parse(localStorage.getItem('v57_rounds')) || [];
+    let savedGames = JSON.parse(localStorage.getItem('v57_library')) || [];
+    let activeGameId = localStorage.getItem('v57_active_id') || null;
+    let isDark = localStorage.getItem('v57_dark') === 'true';
     let currentEdit = { rIdx: null, pId: null }, renamingPlayerId = null, targetInputId = null;
 
     if (isDark) document.body.classList.add('dark-mode');
@@ -113,7 +135,7 @@
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v56_dark', isDark); }
+    function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v57_dark', isDark); }
     function openCalculator(id) { targetInputId = id; calcClear(); openModal('calcModal'); }
     function calcInput(v) { let d = document.getElementById('calcDisplay'); d.innerText = d.innerText === '0' ? v : d.innerText + v; }
     function calcClear() { document.getElementById('calcDisplay').innerText = '0'; }
@@ -128,9 +150,9 @@
     }
 
     function saveAndRefresh() {
-        localStorage.setItem('v56_players', JSON.stringify(players));
-        localStorage.setItem('v56_rounds', JSON.stringify(rounds));
-        localStorage.setItem('v56_active_id', activeGameId || "");
+        localStorage.setItem('v57_players', JSON.stringify(players));
+        localStorage.setItem('v57_rounds', JSON.stringify(rounds));
+        localStorage.setItem('v57_active_id', activeGameId || "");
         render();
     }
 
@@ -156,7 +178,7 @@
     function performReset(t) { if(t==='scores'){ rounds=[]; players.forEach(p=>p.score=0); } else { players=[]; rounds=[]; } activeGameId=null; closeModal('resetModal'); saveAndRefresh(); }
     
     function openSaveModal() { if (activeGameId) { const g = savedGames.find(x => x.id == activeGameId); if(g) document.getElementById('saveGameName').value = g.name; } openModal('saveGameModal'); }
-    function confirmSaveGame(isNew) { const name = document.getElementById('saveGameName').value || "Game"; const snapshot = { id: isNew ? Date.now() : (activeGameId || Date.now()), name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)), date: new Date().toLocaleString() }; if (isNew || !activeGameId) { savedGames.push(snapshot); activeGameId = snapshot.id; } else { const idx = savedGames.findIndex(g => g.id == activeGameId); savedGames[idx] = snapshot; } localStorage.setItem('v56_library', JSON.stringify(savedGames)); closeModal('saveGameModal'); saveAndRefresh(); }
+    function confirmSaveGame(isNew) { const name = document.getElementById('saveGameName').value || "Game"; const snapshot = { id: isNew ? Date.now() : (activeGameId || Date.now()), name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)), date: new Date().toLocaleString() }; if (isNew || !activeGameId) { savedGames.push(snapshot); activeGameId = snapshot.id; } else { const idx = savedGames.findIndex(g => g.id == activeGameId); savedGames[idx] = snapshot; } localStorage.setItem('v57_library', JSON.stringify(savedGames)); closeModal('saveGameModal'); saveAndRefresh(); }
     
     function openLibrary() { 
         document.getElementById('saveList').innerHTML = savedGames.map((g, i) => `
@@ -169,19 +191,12 @@
     }
 
     function checkBeforeLoad(i) {
-        // Find if our current session is already saved in the library
         const currentInLibrary = savedGames.find(g => g.id == activeGameId);
-        
-        // A session is "dirty" if:
-        // 1. It's a new session (not in library) and has players/rounds
-        // 2. It is a library game but current data differs from the stored version
         const isDirty = !currentInLibrary ? (players.length > 0 || rounds.length > 0) :
                         (JSON.stringify(currentInLibrary.players) !== JSON.stringify(players) || 
                          JSON.stringify(currentInLibrary.rounds) !== JSON.stringify(rounds));
 
-        // Close Library instantly so the user sees the confirmation prompt
         closeModal('libraryModal');
-
         if (isDirty) {
             showConfirm("Unsaved Changes", "Your current session has unsaved changes. Discard them and open this game?", () => loadGame(i));
         } else {
@@ -197,7 +212,7 @@
     }
 
     function exportToCSV(i) { const g = savedGames[i]; let c = "Round," + g.players.map(p => p.name).join(",") + "\n"; g.rounds.forEach((r, idx) => { c += `R${idx+1},` + g.players.map(p => r.scores[p.id] || 0).join(",") + "\n"; }); const blob = new Blob([c], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${g.name}.csv`; a.click(); }
-    function askDeleteSave(i) { showConfirm("Delete", "Delete file?", () => { if(savedGames[i].id == activeGameId) activeGameId = null; savedGames.splice(i,1); localStorage.setItem('v56_library', JSON.stringify(savedGames)); openLibrary(); saveAndRefresh(); }); }
+    function askDeleteSave(i) { showConfirm("Delete", "Delete file?", () => { if(savedGames[i].id == activeGameId) activeGameId = null; savedGames.splice(i,1); localStorage.setItem('v57_library', JSON.stringify(savedGames)); openLibrary(); saveAndRefresh(); }); }
     function showConfirm(t, tx, a) { document.getElementById('confirmTitle').innerText = t; document.getElementById('confirmText').innerText = tx; document.getElementById('confirmActionBtn').onclick = () => { a(); closeModal('confirmModal'); }; openModal('confirmModal'); }
     function askDeletePlayer(id, n) { showConfirm("Delete", `Remove ${n}?`, () => { players = players.filter(p => p.id !== id); saveAndRefresh(); }); }
     function askDeleteRound(i) { showConfirm("Delete", `Delete Round ${i+1}?`, () => { const r = rounds[i]; players.forEach(p => p.score -= (r.scores[p.id] || 0)); rounds.splice(i, 1); saveAndRefresh(); }); }
