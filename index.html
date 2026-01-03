@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scorecard Pro V38</title>
+    <style>
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
+        .dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; --accent: #2ecc71; --total-bg: #2d2d2d; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
+        .container { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; margin: auto; }
+        
+        .active-game-banner { font-size: 0.8rem; text-align: center; margin-bottom: 10px; color: #3498db; font-weight: bold; }
+        #winnerSpotlight { text-align: center; padding: 12px; margin-bottom: 15px; border-radius: 10px; color: #000; font-weight: bold; display: none; border: 1px solid rgba(0,0,0,0.1); }
+
+        .input-section { display: flex; gap: 8px; margin-bottom: 15px; background: var(--bg); padding: 10px; border-radius: 10px; align-items: center; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 16px; width: 100%; }
+        
+        button, .col-del, .round-del-btn, .editable-name { cursor: pointer; }
+        button { padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; }
+
+        #leaderboardTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        #leaderboardTable td { padding: 8px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        
+        /* Layout Components */
+        .full-left-bar { width: 6px; height: 42px; border-radius: 0 4px 4px 0; }
+        .col-rank-plain { width: 30px; text-align: center; font-weight: bold; font-size: 1rem; }
+        
+        .circle-color-picker {
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff;
+            box-shadow: 0 0 4px rgba(0,0,0,0.2); position: relative; overflow: hidden; cursor: pointer;
+        }
+        .circle-color-picker input[type="color"] {
+            position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer;
+        }
+
+        .col-del { width: 35px; text-align: center; font-size: 1.1rem; }
+        .col-score { width: 45px; text-align: center; font-weight: bold; font-size: 1.1rem; }
+        .col-batch { width: 70px; text-align: right; padding-right: 5px !important; }
+        .editable-name { font-size: 0.95rem; font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .round-container { overflow-x: auto; margin-top: 15px; border: 1px solid var(--border); border-radius: 8px; }
+        #roundTable { width: 100%; border-collapse: collapse; }
+        #roundTable th, #roundTable td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
+        #roundTable th { background: var(--bg); font-weight: bold; }
+
+        .total-row td { background: var(--total-bg) !important; font-weight: bold; border-top: 2px solid var(--border); }
+        .round-del-btn { width: 24px; height: 24px; background: #e74c3c; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 15px; width: 85%; max-width: 350px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="confirmModal" class="modal"><div class="modal-content"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modal-btns" style="display:flex; gap:10px; margin-top:20px"><button onclick="closeModal('confirmModal')" style="background:#95a5a6; flex:1">Cancel</button><button id="confirmActionBtn" style="background:#e74c3c; flex:1">Confirm</button></div></div></div>
+<div id="saveGameModal" class="modal"><div class="modal-content"><h3>Save Game</h3><input type="text" id="saveGameName"><div style="display:flex; flex-direction:column; gap:10px; margin-top:15px"><button onclick="confirmSaveGame(false)">Update Current</button><button onclick="confirmSaveGame(true)" style="background:#3498db">Save New Copy</button><button onclick="closeModal('saveGameModal')" style="background:#95a5a6">Cancel</button></div></div></div>
+<div id="libraryModal" class="modal"><div class="modal-content"><h3>📚 Library</h3><div id="saveList"></div><button onclick="closeModal('libraryModal')" style="background:#95a5a6; margin-top:20px; width:100%">Close</button></div></div>
+<div id="editModal" class="modal"><div class="modal-content"><h3>Edit Score</h3><input type="number" id="modalInput" style="font-size:28px; text-align:center"><div class="modal-btns" style="display:flex; gap:10px; margin-top:20px"><button onclick="closeModal('editModal')" style="background:#95a5a6; flex:1">Cancel</button><button onclick="saveModalEdit()" style="flex:1">Save</button></div></div></div>
+
+<div class="container">
+    <div id="activeGameLabel" class="active-game-banner"></div>
+    <div id="winnerSpotlight"></div>
+    
+    <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px">
+        <button onclick="openSaveModal()" style="flex:1; background:#3498db">💾 Save</button>
+        <button onclick="openLibrary()" style="flex:1; background:#9b59b6">📚 Library</button>
+        <button onclick="toggleDarkMode()" id="modeBtn" style="background:#34495e">🌙</button>
+    </div>
+
+    <div class="input-section">
+        <input type="text" id="playerName" placeholder="Player Name" style="flex:2">
+        <div class="circle-color-picker" style="width:40px; height:40px; margin: 0 5px;">
+            <input type="color" id="playerColor" value="#3498db">
+            <div id="colorPreview" style="width:100%; height:100%; background:#3498db"></div>
+        </div>
+        <button onclick="addPlayer()" style="flex:1">Add</button>
+    </div>
+
+    <table id="leaderboardTable">
+        <tbody id="leaderboard"></tbody>
+    </table>
+
+    <div id="batchAction" style="display:none; margin-top: 15px;">
+        <button onclick="submitBatchRound()" style="width:100%; background:#27ae60; padding:15px; font-size:1.1rem">➕ Add Round Scores</button>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 20px;">
+        <h3 style="margin:0">📊 Rounds</h3>
+        <select id="sortOrder" onchange="saveAndRefresh()" style="width:auto; padding:5px">
+            <option value="highToLow">High Wins</option>
+            <option value="lowToHigh">Low Wins</option>
+        </select>
+    </div>
+    
+    <div class="round-container">
+        <table id="roundTable">
+            <thead><tr id="roundHeader"></tr></thead>
+            <tbody id="roundBody"></tbody>
+            <tfoot id="roundFooter"></tfoot>
+        </table>
+    </div>
+
+    <button onclick="askReset()" style="width:100%; margin-top:20px; background:#95a5a6">Start Fresh / Reset</button>
+</div>
+
+<script>
+    let players = JSON.parse(localStorage.getItem('v38_players')) || [];
+    let rounds = JSON.parse(localStorage.getItem('v38_rounds')) || [];
+    let savedGames = JSON.parse(localStorage.getItem('v38_library')) || [];
+    let activeGameId = localStorage.getItem('v38_active_id') || null;
+    let isDark = localStorage.getItem('v38_dark') === 'true';
+    let currentEdit = { rIdx: null, pId: null };
+
+    if (isDark) document.body.classList.add('dark-mode');
+    
+    document.getElementById('playerColor').addEventListener('input', (e) => {
+        document.getElementById('colorPreview').style.background = e.target.value;
+    });
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function showConfirm(title, text, action) {
+        document.getElementById('confirmTitle').innerText = title;
+        document.getElementById('confirmText').innerText = text;
+        const btn = document.getElementById('confirmActionBtn');
+        btn.onclick = function() { action(); closeModal('confirmModal'); };
+        openModal('confirmModal');
+    }
+
+    function toggleDarkMode() {
+        isDark = !isDark;
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('v38_dark', isDark);
+    }
+
+    function updatePlayerColor(id, newColor) {
+        const p = players.find(x => x.id === id);
+        if (p) { p.color = newColor; saveAndRefresh(); }
+    }
+
+    function renamePlayer(id) {
+        const p = players.find(x => x.id === id);
+        if (!p) return;
+        const newName = prompt("Rename player:", p.name);
+        if (newName && newName.trim()) { p.name = newName.trim(); saveAndRefresh(); }
+    }
+
+    function addPlayer() {
+        const nameInput = document.getElementById('playerName');
+        const colorInput = document.getElementById('playerColor');
+        const name = nameInput.value.trim();
+        if (!name) return;
+        players.push({ id: Date.now(), name: name, score: 0, color: colorInput.value });
+        nameInput.value = "";
+        saveAndRefresh();
+    }
+
+    function submitBatchRound() {
+        const newRound = { scores: {} };
+        let added = false;
+        players.forEach(p => {
+            const inp = document.getElementById(`batch-${p.id}`);
+            const val = parseInt(inp.value);
+            if (!isNaN(val)) {
+                p.score += val;
+                newRound.scores[p.id] = val;
+                inp.value = "";
+                added = true;
+            } else { newRound.scores[p.id] = 0; }
+        });
+        if (added) { rounds.push(newRound); saveAndRefresh(); }
+    }
+
+    function saveAndRefresh() {
+        localStorage.setItem('v38_players', JSON.stringify(players));
+        localStorage.setItem('v38_rounds', JSON.stringify(rounds));
+        localStorage.setItem('v38_active_id', activeGameId || "");
+        render();
+    }
+
+    function render() {
+        const mode = document.getElementById('sortOrder').value;
+        players.sort((a, b) => mode === 'highToLow' ? b.score - a.score : a.score - b.score);
+        
+        const banner = document.getElementById('activeGameLabel');
+        const game = savedGames.find(g => g.id == activeGameId);
+        banner.innerText = activeGameId && game ? "📍 Editing: " + game.name : "✨ New Game";
+        
+        document.getElementById('batchAction').style.display = players.length > 0 ? 'block' : 'none';
+
+        const lb = document.getElementById('leaderboard');
+        lb.innerHTML = players.map((p, i) => `
+            <tr>
+                <td style="width:6px; padding:0;"><div class="full-left-bar" style="background:${p.color}"></div></td>
+                <td class="col-rank-plain">${i+1}</td>
+                <td style="width:35px; text-align:center;">
+                    <div class="circle-color-picker" style="background:${p.color}">
+                        <input type="color" value="${p.color}" onchange="updatePlayerColor(${p.id}, this.value)">
+                    </div>
+                </td>
+                <td style="padding-left:10px;"><b class="editable-name" onclick="renamePlayer(${p.id})">${p.name}</b></td>
+                <td class="col-del" onclick="askDeletePlayer(${p.id}, '${p.name}')">🗑️</td>
+                <td class="col-score">${p.score}</td>
+                <td class="col-batch"><input type="number" id="batch-${p.id}" placeholder="+" style="width:60px; padding:8px; border:2px solid ${p.color}"></td>
+            </tr>`).join('');
+
+        const rh = document.getElementById('roundHeader');
+        let headerHtml = `<th>R</th>`;
+        headerHtml += players.map(p => `<th style="background:${p.color}; color:#000; font-size:12px;">${p.name.charAt(0).toUpperCase()}</th>`).join('');
+        headerHtml += `<th>✕</th>`;
+        rh.innerHTML = headerHtml;
+
+        const rb = document.getElementById('roundBody');
+        rb.innerHTML = rounds.map((r, ri) => `
+            <tr>
+                <td style="font-weight:bold; background:var(--bg)">${ri+1}</td>
+                ${players.map(p => `<td onclick="editScore(${ri}, ${p.id}, ${r.scores[p.id]||0})">${r.scores[p.id]||0}</td>`).join('')}
+                <td onclick="askDeleteRound(${ri})"><span class="round-del-btn">✕</span></td>
+            </tr>`).join('');
+
+        const rf = document.getElementById('roundFooter');
+        if (players.length > 0) {
+            let footerHtml = `<tr class="total-row"><td>Σ</td>`;
+            footerHtml += players.map(p => `<td style="color:${p.color}">${p.score}</td>`).join('');
+            footerHtml += `<td></td></tr>`;
+            rf.innerHTML = footerHtml;
+        } else { rf.innerHTML = ""; }
+            
+        const spot = document.getElementById('winnerSpotlight');
+        if (players.length > 0) {
+            spot.style.display = 'block'; spot.style.background = players[0].color;
+            spot.innerText = `🌟 Leader: ${players[0].name} (${players[0].score})`;
+        } else { spot.style.display = 'none'; }
+    }
+
+    function askDeletePlayer(id, name) { showConfirm("Delete Player", `Remove ${name}?`, () => { players = players.filter(p => p.id !== id); rounds.forEach(r => { if(r.scores) delete r.scores[id]; }); saveAndRefresh(); }); }
+    function askDeleteRound(idx) { showConfirm("Delete Round", `Permanently delete Round ${idx+1}?`, () => { const round = rounds[idx]; players.forEach(p => { if (round.scores && round.scores[p.id]) p.score -= (round.scores[p.id] || 0); }); rounds.splice(idx, 1); saveAndRefresh(); }); }
+    function askReset() { showConfirm("Reset Game", "Clear everything?", () => { players = []; rounds = []; activeGameId = null; saveAndRefresh(); }); }
+    function editScore(ri, pi, val) { currentEdit = { rIdx: ri, pId: pi }; document.getElementById('modalInput').value = val; openModal('editModal'); }
+    function saveModalEdit() { const newVal = parseInt(document.getElementById('modalInput').value); if (isNaN(newVal)) return; const p = players.find(x => x.id == currentEdit.pId); const oldVal = rounds[currentEdit.rIdx].scores[currentEdit.pId] || 0; p.score = p.score - oldVal + newVal; rounds[currentEdit.rIdx].scores[currentEdit.pId] = newVal; closeModal('editModal'); saveAndRefresh(); }
+    function openSaveModal() { if (activeGameId) { const g = savedGames.find(x => x.id == activeGameId); if(g) document.getElementById('saveGameName').value = g.name; } openModal('saveGameModal'); }
+    function confirmSaveGame(isNew) { const name = document.getElementById('saveGameName').value || "Game"; if (isNew || !activeGameId) { const id = Date.now(); savedGames.push({ id, name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)), date: new Date().toLocaleString() }); activeGameId = id; } else { const idx = savedGames.findIndex(g => g.id == activeGameId); if (idx !== -1) savedGames[idx] = { ...savedGames[idx], name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)) }; } localStorage.setItem('v38_library', JSON.stringify(savedGames)); closeModal('saveGameModal'); saveAndRefresh(); }
+    function openLibrary() { const list = document.getElementById('saveList'); list.innerHTML = savedGames.map((g, i) => `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--border)"><div style="flex:1; text-align:left;" onclick="loadGame(${i})"><b>${g.name}</b><br><small>${g.date}</small></div><button onclick="askDeleteSave(${i})" style="background:#e74c3c; padding:8px 12px; border-radius:5px;">🗑️</button></div>`).join('') || "Empty Library"; openModal('libraryModal'); }
+    function loadGame(i) { players = JSON.parse(JSON.stringify(savedGames[i].players)); rounds = JSON.parse(JSON.stringify(savedGames[i].rounds)); activeGameId = savedGames[i].id; closeModal('libraryModal'); saveAndRefresh(); }
+    function askDeleteSave(i) { showConfirm("Delete Save", "Permanently delete this file?", () => { if (savedGames[i].id == activeGameId) activeGameId = null; savedGames.splice(i, 1); localStorage.setItem('v38_library', JSON.stringify(savedGames)); openLibrary(); saveAndRefresh(); }); }
+
+    render();
+</script>
+</body>
+</html>
