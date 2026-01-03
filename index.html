@@ -3,248 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Scorecard Pro V38</title>
+    <title>JaysScorecard V56</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Scorecard">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3589/3589868.png">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Scorecard Pro","short_name":"Scorecard","start_url":".","display":"standalone","background_color":"#f0f2f5","theme_color":"#27ae60"}'>
+
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
         .dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; --accent: #2ecc71; --total-bg: #2d2d2d; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: env(safe-area-inset-top) 10px 10px 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
         .container { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; margin: auto; }
-        
-        .active-game-banner { font-size: 0.8rem; text-align: center; margin-bottom: 10px; color: #3498db; font-weight: bold; }
+        .main-title { text-align: center; margin: 10px 0 5px 0; font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
+        .active-game-banner { font-size: 0.8rem; text-align: center; margin-bottom: 15px; color: #3498db; font-weight: bold; opacity: 0.8; }
         #winnerSpotlight { text-align: center; padding: 12px; margin-bottom: 15px; border-radius: 10px; color: #000; font-weight: bold; display: none; border: 1px solid rgba(0,0,0,0.1); }
-
-        .input-section { display: flex; gap: 8px; margin-bottom: 15px; background: var(--bg); padding: 10px; border-radius: 10px; align-items: center; }
+        .input-section { display: flex; gap: 8px; margin-bottom: 20px; background: var(--bg); padding: 10px; border-radius: 10px; align-items: center; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 16px; width: 100%; }
-        
-        button, .col-del, .round-del-btn, .editable-name { cursor: pointer; }
+        button, .col-del, .round-del-btn, .editable-name, .score-cell, .circle-color-picker, .square-color-picker, .calc-trigger, .lib-item-link { cursor: pointer; }
         button { padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: bold; }
-
-        #leaderboardTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        #leaderboardTable td { padding: 8px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        
-        /* Layout Components */
-        .full-left-bar { width: 6px; height: 42px; border-radius: 0 4px 4px 0; }
-        .col-rank-plain { width: 30px; text-align: center; font-weight: bold; font-size: 1rem; }
-        
-        .circle-color-picker {
-            width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff;
-            box-shadow: 0 0 4px rgba(0,0,0,0.2); position: relative; overflow: hidden; cursor: pointer;
-        }
-        .circle-color-picker input[type="color"] {
-            position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer;
-        }
-
-        .col-del { width: 35px; text-align: center; font-size: 1.1rem; }
-        .col-score { width: 45px; text-align: center; font-weight: bold; font-size: 1.1rem; }
-        .col-batch { width: 70px; text-align: right; padding-right: 5px !important; }
-        .editable-name { font-size: 0.95rem; font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        .round-container { overflow-x: auto; margin-top: 15px; border: 1px solid var(--border); border-radius: 8px; }
+        #leaderboardTable { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 20px; }
+        #leaderboardTable td { padding: 0; border-bottom: 1px solid var(--border); vertical-align: middle; height: 52px; }
+        .circle-color-picker { width: 26px; height: 26px; border-radius: 50%; position: relative; overflow: hidden; margin: auto; border: 1px solid var(--border); }
+        .square-color-picker { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border); position: relative; overflow: hidden; flex-shrink: 0; }
+        .color-input-hidden { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; cursor: pointer; }
+        .col-batch { width: 95px; text-align: right; padding-right: 8px !important; position: relative; }
+        .calc-trigger { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; background: #34495e; color: white; padding: 4px 6px; border-radius: 4px; opacity: 0.8; }
+        .round-container { overflow-x: auto; margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; }
         #roundTable { width: 100%; border-collapse: collapse; }
-        #roundTable th, #roundTable td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
+        #roundTable th, #roundTable td { padding: 10px; border: 1px solid var(--border); text-align: center; font-size: 0.85rem; }
         #roundTable th { background: var(--bg); font-weight: bold; }
-
-        .total-row td { background: var(--total-bg) !important; font-weight: bold; border-top: 2px solid var(--border); }
-        .round-del-btn { width: 24px; height: 24px; background: #e74c3c; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
-
+        .total-row td { background: var(--total-bg) !important; font-weight: bold; border-top: 2px solid var(--border); padding: 12px 0; }
+        .round-num { font-weight: bold; background: var(--bg); }
+        .round-del-btn { width: 22px; height: 22px; background: #e74c3c; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 15px; width: 85%; max-width: 350px; text-align: center; }
+        .modal-content { background: var(--card); padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .modal-btns-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
+        .calc-display { background: #000; color: #0f0; padding: 15px; font-family: monospace; font-size: 24px; text-align: right; border-radius: 8px; margin-bottom: 10px; min-height: 30px; }
+        .calc-btn { padding: 15px; background: #34495e; color: white; border-radius: 8px; border: none; font-size: 18px; font-weight: bold; }
+        .calc-btn.op { background: #f39c12; }
     </style>
 </head>
 <body>
 
-<div id="confirmModal" class="modal"><div class="modal-content"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modal-btns" style="display:flex; gap:10px; margin-top:20px"><button onclick="closeModal('confirmModal')" style="background:#95a5a6; flex:1">Cancel</button><button id="confirmActionBtn" style="background:#e74c3c; flex:1">Confirm</button></div></div></div>
-<div id="saveGameModal" class="modal"><div class="modal-content"><h3>Save Game</h3><input type="text" id="saveGameName"><div style="display:flex; flex-direction:column; gap:10px; margin-top:15px"><button onclick="confirmSaveGame(false)">Update Current</button><button onclick="confirmSaveGame(true)" style="background:#3498db">Save New Copy</button><button onclick="closeModal('saveGameModal')" style="background:#95a5a6">Cancel</button></div></div></div>
+<div id="calcModal" class="modal"><div class="modal-content"><h3>Pocket Calculator</h3><div id="calcDisplay" class="calc-display">0</div><div class="calc-grid">
+    <button class="calc-btn" onclick="calcInput('7')">7</button><button class="calc-btn" onclick="calcInput('8')">8</button><button class="calc-btn" onclick="calcInput('9')">9</button><button class="calc-btn op" onclick="calcInput('+')">+</button>
+    <button class="calc-btn" onclick="calcInput('4')">4</button><button class="calc-btn" onclick="calcInput('5')">5</button><button class="calc-btn" onclick="calcInput('6')">6</button><button class="calc-btn op" onclick="calcInput('-')">-</button>
+    <button class="calc-btn" onclick="calcInput('1')">1</button><button class="calc-btn" onclick="calcInput('2')">2</button><button class="calc-btn" onclick="calcInput('3')">3</button><button class="calc-btn op" onclick="calcClear()">C</button>
+    <button class="calc-btn" onclick="calcInput('0')" style="grid-column:span 2">0</button><button class="calc-btn op" onclick="calcEval()">=</button><button class="calc-btn op" onclick="calcInput('*')">×</button>
+    <button class="calc-btn" style="background:#95a5a6; grid-column:span 2" onclick="closeModal('calcModal')">Cancel</button><button class="calc-btn" style="background:var(--accent); grid-column:span 2" onclick="calcApply()">Apply Total</button>
+</div></div></div>
+<div id="confirmModal" class="modal"><div class="modal-content"><h3 id="confirmTitle">Confirm</h3><p id="confirmText"></p><div class="modal-btns-stack" style="flex-direction:row"><button onclick="closeModal('confirmModal')" style="background:#95a5a6; flex:1">Cancel</button><button id="confirmActionBtn" style="background:#e74c3c; flex:1">Confirm</button></div></div></div>
+<div id="saveGameModal" class="modal"><div class="modal-content"><h3>Save Game</h3><input type="text" id="saveGameName"><div class="modal-btns-stack"><button onclick="confirmSaveGame(false)">Update Current</button><button onclick="confirmSaveGame(true)" style="background:#3498db">Save New Copy</button><button onclick="closeModal('saveGameModal')" style="background:#95a5a6">Cancel</button></div></div></div>
 <div id="libraryModal" class="modal"><div class="modal-content"><h3>📚 Library</h3><div id="saveList"></div><button onclick="closeModal('libraryModal')" style="background:#95a5a6; margin-top:20px; width:100%">Close</button></div></div>
-<div id="editModal" class="modal"><div class="modal-content"><h3>Edit Score</h3><input type="number" id="modalInput" style="font-size:28px; text-align:center"><div class="modal-btns" style="display:flex; gap:10px; margin-top:20px"><button onclick="closeModal('editModal')" style="background:#95a5a6; flex:1">Cancel</button><button onclick="saveModalEdit()" style="flex:1">Save</button></div></div></div>
+<div id="editModal" class="modal"><div class="modal-content"><h3>Edit Score</h3><div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;"><input type="number" id="modalInput" style="font-size:28px; text-align:center"><button onclick="openCalculator('modalInput')" style="background:#34495e; padding:12px;">🧮</button></div><div class="modal-btns-stack" style="flex-direction:row"><button onclick="closeModal('editModal')" style="background:#95a5a6; flex:1">Cancel</button><button onclick="saveModalEdit()" style="flex:1">Save</button></div></div></div>
+<div id="renameModal" class="modal"><div class="modal-content"><h3>Rename Player</h3><input type="text" id="renameInput" style="font-size:20px; text-align:center"><div class="modal-btns-stack" style="flex-direction:row"><button onclick="closeModal('renameModal')" style="background:#95a5a6; flex:1">Cancel</button><button onclick="saveRename()" style="flex:1">Save</button></div></div></div>
+<div id="resetModal" class="modal"><div class="modal-content"><h3>Reset Options</h3><p>How would you like to reset?</p><div class="modal-btns-stack"><button onclick="performReset('scores')" style="background:#3498db">Clear Scores (Keep Players)</button><button onclick="performReset('all')" style="background:#e74c3c">Full Reset (Clear Everything)</button><button onclick="closeModal('resetModal')" style="background:#95a5a6">Cancel</button></div></div></div>
 
 <div class="container">
+    <h1 class="main-title">Jay's Ultimate Scorecard</h1>
     <div id="activeGameLabel" class="active-game-banner"></div>
     <div id="winnerSpotlight"></div>
-    
     <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px">
         <button onclick="openSaveModal()" style="flex:1; background:#3498db">💾 Save</button>
         <button onclick="openLibrary()" style="flex:1; background:#9b59b6">📚 Library</button>
         <button onclick="toggleDarkMode()" id="modeBtn" style="background:#34495e">🌙</button>
     </div>
-
     <div class="input-section">
         <input type="text" id="playerName" placeholder="Player Name" style="flex:2">
-        <div class="circle-color-picker" style="width:40px; height:40px; margin: 0 5px;">
-            <input type="color" id="playerColor" value="#3498db">
-            <div id="colorPreview" style="width:100%; height:100%; background:#3498db"></div>
+        <div class="square-color-picker">
+            <input type="color" id="playerColor" class="color-input-hidden" value="#3498db" oninput="document.getElementById('colorPreview').style.background = this.value">
+            <div id="colorPreview" style="width:100%; height:100%; background:#3498db;"></div>
         </div>
-        <button onclick="addPlayer()" style="flex:1">Add</button>
+        <button onclick="addPlayer()" style="flex:1; margin-left:5px;">Add</button>
     </div>
-
-    <table id="leaderboardTable">
-        <tbody id="leaderboard"></tbody>
-    </table>
-
-    <div id="batchAction" style="display:none; margin-top: 15px;">
-        <button onclick="submitBatchRound()" style="width:100%; background:#27ae60; padding:15px; font-size:1.1rem">➕ Add Round Scores</button>
+    <h3 style="margin:15px 0 10px 0; font-size:1.1rem; font-weight:700;">🏆 Leaderboard</h3>
+    <table id="leaderboardTable"><tbody id="leaderboard"></tbody></table>
+    <div id="batchAction" style="display:none; margin-top:15px;"><button onclick="submitBatchRound()" style="width:100%; background:#27ae60; padding:15px; font-size:1.1rem">➕ Add Round Scores</button></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:25px;">
+        <h3 style="margin:0; font-size:1.1rem; font-weight:700;">📊 Rounds</h3>
+        <select id="sortOrder" onchange="saveAndRefresh()" style="width:auto; padding:5px; height:35px; font-size:13px;"><option value="highToLow">High Wins</option><option value="lowToHigh">Low Wins</option></select>
     </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 20px;">
-        <h3 style="margin:0">📊 Rounds</h3>
-        <select id="sortOrder" onchange="saveAndRefresh()" style="width:auto; padding:5px">
-            <option value="highToLow">High Wins</option>
-            <option value="lowToHigh">Low Wins</option>
-        </select>
-    </div>
-    
-    <div class="round-container">
-        <table id="roundTable">
-            <thead><tr id="roundHeader"></tr></thead>
-            <tbody id="roundBody"></tbody>
-            <tfoot id="roundFooter"></tfoot>
-        </table>
-    </div>
-
-    <button onclick="askReset()" style="width:100%; margin-top:20px; background:#95a5a6">Start Fresh / Reset</button>
+    <div class="round-container"><table id="roundTable"><thead><tr id="roundHeader"></tr></thead><tbody id="roundBody"></tbody><tfoot id="roundFooter"></tfoot></table></div>
+    <button onclick="openModal('resetModal')" style="width:100%; margin-top:30px; background:#95a5a6">Start Fresh / Reset</button>
 </div>
 
 <script>
-    let players = JSON.parse(localStorage.getItem('v38_players')) || [];
-    let rounds = JSON.parse(localStorage.getItem('v38_rounds')) || [];
-    let savedGames = JSON.parse(localStorage.getItem('v38_library')) || [];
-    let activeGameId = localStorage.getItem('v38_active_id') || null;
-    let isDark = localStorage.getItem('v38_dark') === 'true';
-    let currentEdit = { rIdx: null, pId: null };
+    let players = JSON.parse(localStorage.getItem('v56_players')) || [];
+    let rounds = JSON.parse(localStorage.getItem('v56_rounds')) || [];
+    let savedGames = JSON.parse(localStorage.getItem('v56_library')) || [];
+    let activeGameId = localStorage.getItem('v56_active_id') || null;
+    let isDark = localStorage.getItem('v56_dark') === 'true';
+    let currentEdit = { rIdx: null, pId: null }, renamingPlayerId = null, targetInputId = null;
 
     if (isDark) document.body.classList.add('dark-mode');
-    
-    document.getElementById('playerColor').addEventListener('input', (e) => {
-        document.getElementById('colorPreview').style.background = e.target.value;
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const active = document.activeElement;
+            if (active.id === 'playerName') addPlayer();
+            else if (active.id === 'renameInput') saveRename();
+            else if (active.id === 'modalInput') saveModalEdit();
+            else if (active.id === 'saveGameName') confirmSaveGame(false);
+            else if (active.id.startsWith('batch-')) submitBatchRound();
+        }
     });
 
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    function showConfirm(title, text, action) {
-        document.getElementById('confirmTitle').innerText = title;
-        document.getElementById('confirmText').innerText = text;
-        const btn = document.getElementById('confirmActionBtn');
-        btn.onclick = function() { action(); closeModal('confirmModal'); };
-        openModal('confirmModal');
-    }
-
-    function toggleDarkMode() {
-        isDark = !isDark;
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('v38_dark', isDark);
-    }
-
-    function updatePlayerColor(id, newColor) {
-        const p = players.find(x => x.id === id);
-        if (p) { p.color = newColor; saveAndRefresh(); }
-    }
-
-    function renamePlayer(id) {
-        const p = players.find(x => x.id === id);
-        if (!p) return;
-        const newName = prompt("Rename player:", p.name);
-        if (newName && newName.trim()) { p.name = newName.trim(); saveAndRefresh(); }
-    }
+    function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v56_dark', isDark); }
+    function openCalculator(id) { targetInputId = id; calcClear(); openModal('calcModal'); }
+    function calcInput(v) { let d = document.getElementById('calcDisplay'); d.innerText = d.innerText === '0' ? v : d.innerText + v; }
+    function calcClear() { document.getElementById('calcDisplay').innerText = '0'; }
+    function calcEval() { try { document.getElementById('calcDisplay').innerText = eval(document.getElementById('calcDisplay').innerText.replace('×', '*')); } catch { document.getElementById('calcDisplay').innerText = "Error"; } }
+    function calcApply() { calcEval(); let val = document.getElementById('calcDisplay').innerText; if(val !== "Error") { document.getElementById(targetInputId).value = val; closeModal('calcModal'); } }
 
     function addPlayer() {
         const nameInput = document.getElementById('playerName');
-        const colorInput = document.getElementById('playerColor');
-        const name = nameInput.value.trim();
-        if (!name) return;
-        players.push({ id: Date.now(), name: name, score: 0, color: colorInput.value });
-        nameInput.value = "";
-        saveAndRefresh();
-    }
-
-    function submitBatchRound() {
-        const newRound = { scores: {} };
-        let added = false;
-        players.forEach(p => {
-            const inp = document.getElementById(`batch-${p.id}`);
-            const val = parseInt(inp.value);
-            if (!isNaN(val)) {
-                p.score += val;
-                newRound.scores[p.id] = val;
-                inp.value = "";
-                added = true;
-            } else { newRound.scores[p.id] = 0; }
-        });
-        if (added) { rounds.push(newRound); saveAndRefresh(); }
+        if (!nameInput.value.trim()) return;
+        players.push({ id: Date.now(), name: nameInput.value.trim(), score: 0, color: document.getElementById('playerColor').value });
+        nameInput.value = ""; saveAndRefresh();
     }
 
     function saveAndRefresh() {
-        localStorage.setItem('v38_players', JSON.stringify(players));
-        localStorage.setItem('v38_rounds', JSON.stringify(rounds));
-        localStorage.setItem('v38_active_id', activeGameId || "");
+        localStorage.setItem('v56_players', JSON.stringify(players));
+        localStorage.setItem('v56_rounds', JSON.stringify(rounds));
+        localStorage.setItem('v56_active_id', activeGameId || "");
         render();
     }
 
     function render() {
         const mode = document.getElementById('sortOrder').value;
         players.sort((a, b) => mode === 'highToLow' ? b.score - a.score : a.score - b.score);
-        
-        const banner = document.getElementById('activeGameLabel');
-        const game = savedGames.find(g => g.id == activeGameId);
-        banner.innerText = activeGameId && game ? "📍 Editing: " + game.name : "✨ New Game";
-        
-        document.getElementById('batchAction').style.display = players.length > 0 ? 'block' : 'none';
-
-        const lb = document.getElementById('leaderboard');
-        lb.innerHTML = players.map((p, i) => `
-            <tr>
-                <td style="width:6px; padding:0;"><div class="full-left-bar" style="background:${p.color}"></div></td>
-                <td class="col-rank-plain">${i+1}</td>
-                <td style="width:35px; text-align:center;">
-                    <div class="circle-color-picker" style="background:${p.color}">
-                        <input type="color" value="${p.color}" onchange="updatePlayerColor(${p.id}, this.value)">
-                    </div>
-                </td>
-                <td style="padding-left:10px;"><b class="editable-name" onclick="renamePlayer(${p.id})">${p.name}</b></td>
-                <td class="col-del" onclick="askDeletePlayer(${p.id}, '${p.name}')">🗑️</td>
-                <td class="col-score">${p.score}</td>
-                <td class="col-batch"><input type="number" id="batch-${p.id}" placeholder="+" style="width:60px; padding:8px; border:2px solid ${p.color}"></td>
-            </tr>`).join('');
-
-        const rh = document.getElementById('roundHeader');
-        let headerHtml = `<th>R</th>`;
-        headerHtml += players.map(p => `<th style="background:${p.color}; color:#000; font-size:12px;">${p.name.charAt(0).toUpperCase()}</th>`).join('');
-        headerHtml += `<th>✕</th>`;
-        rh.innerHTML = headerHtml;
-
-        const rb = document.getElementById('roundBody');
-        rb.innerHTML = rounds.map((r, ri) => `
-            <tr>
-                <td style="font-weight:bold; background:var(--bg)">${ri+1}</td>
-                ${players.map(p => `<td onclick="editScore(${ri}, ${p.id}, ${r.scores[p.id]||0})">${r.scores[p.id]||0}</td>`).join('')}
-                <td onclick="askDeleteRound(${ri})"><span class="round-del-btn">✕</span></td>
-            </tr>`).join('');
-
-        const rf = document.getElementById('roundFooter');
-        if (players.length > 0) {
-            let footerHtml = `<tr class="total-row"><td>Σ</td>`;
-            footerHtml += players.map(p => `<td style="color:${p.color}">${p.score}</td>`).join('');
-            footerHtml += `<td></td></tr>`;
-            rf.innerHTML = footerHtml;
-        } else { rf.innerHTML = ""; }
-            
+        document.getElementById('activeGameLabel').innerText = activeGameId && savedGames.find(g => g.id == activeGameId) ? "📍 File: " + savedGames.find(g => g.id == activeGameId).name : "✨ New Session";
+        document.getElementById('batchAction').style.display = players.length ? 'block' : 'none';
+        document.getElementById('leaderboard').innerHTML = players.map((p, i) => `<tr><td style="width:3px;"><div style="width:3px;height:52px;background:${p.color}"></div></td><td style="width:30px; text-align:center; font-weight:bold;">${i+1}</td><td style="width:35px;"><div class="circle-color-picker" style="background:${p.color}"><input type="color" value="${p.color}" class="color-input-hidden" onchange="updateColor(${p.id}, this.value)"></div></td><td><b class="editable-name" style="padding-left:10px" onclick="openRenameModal(${p.id})">${p.name}</b></td><td class="col-del" style="width:35px; text-align:center" onclick="askDeletePlayer(${p.id}, '${p.name}')">🗑️</td><td style="width:45px; text-align:center; font-weight:bold;">${p.score}</td><td class="col-batch"><input type="number" id="batch-${p.id}" placeholder="+" style="width:65px; padding:8px; border:2px solid ${p.color}"><span class="calc-trigger" onclick="openCalculator('batch-${p.id}')">🧮</span></td></tr>`).join('');
+        document.getElementById('roundHeader').innerHTML = `<th>R</th>` + players.map(p => `<th style="background:${p.color}; color:#000; font-size:11px;">${p.name[0].toUpperCase()}</th>`).join('') + `<th>✕</th>`;
+        document.getElementById('roundBody').innerHTML = rounds.map((r, ri) => `<tr><td class="round-num">${ri+1}</td>${players.map(p => `<td class="score-cell" onclick="editScore(${ri}, ${p.id}, ${r.scores[p.id]||0})">${r.scores[p.id]||0}</td>`).join('')}<td onclick="askDeleteRound(${ri})"><span class="round-del-btn">✕</span></td></tr>`).join('');
+        document.getElementById('roundFooter').innerHTML = players.length ? `<tr class="total-row"><td>Σ</td>${players.map(p => `<td style="color:${p.color}">${p.score}</td>`).join('')}<td></td></tr>` : "";
         const spot = document.getElementById('winnerSpotlight');
-        if (players.length > 0) {
-            spot.style.display = 'block'; spot.style.background = players[0].color;
-            spot.innerText = `🌟 Leader: ${players[0].name} (${players[0].score})`;
-        } else { spot.style.display = 'none'; }
+        if (players.length) { spot.style.display = 'block'; spot.style.background = players[0].color; spot.innerText = `🌟 Leader: ${players[0].name} (${players[0].score})`; } else spot.style.display = 'none';
     }
 
-    function askDeletePlayer(id, name) { showConfirm("Delete Player", `Remove ${name}?`, () => { players = players.filter(p => p.id !== id); rounds.forEach(r => { if(r.scores) delete r.scores[id]; }); saveAndRefresh(); }); }
-    function askDeleteRound(idx) { showConfirm("Delete Round", `Permanently delete Round ${idx+1}?`, () => { const round = rounds[idx]; players.forEach(p => { if (round.scores && round.scores[p.id]) p.score -= (round.scores[p.id] || 0); }); rounds.splice(idx, 1); saveAndRefresh(); }); }
-    function askReset() { showConfirm("Reset Game", "Clear everything?", () => { players = []; rounds = []; activeGameId = null; saveAndRefresh(); }); }
-    function editScore(ri, pi, val) { currentEdit = { rIdx: ri, pId: pi }; document.getElementById('modalInput').value = val; openModal('editModal'); }
-    function saveModalEdit() { const newVal = parseInt(document.getElementById('modalInput').value); if (isNaN(newVal)) return; const p = players.find(x => x.id == currentEdit.pId); const oldVal = rounds[currentEdit.rIdx].scores[currentEdit.pId] || 0; p.score = p.score - oldVal + newVal; rounds[currentEdit.rIdx].scores[currentEdit.pId] = newVal; closeModal('editModal'); saveAndRefresh(); }
+    function updateColor(id, c) { players.find(x => x.id === id).color = c; saveAndRefresh(); }
+    function openRenameModal(id) { renamingPlayerId = id; document.getElementById('renameInput').value = players.find(x => x.id === id).name; openModal('renameModal'); setTimeout(()=>document.getElementById('renameInput').focus(), 100); }
+    function saveRename() { const n = document.getElementById('renameInput').value.trim(); if(n){ players.find(x => x.id === renamingPlayerId).name = n; closeModal('renameModal'); saveAndRefresh(); } }
+    function submitBatchRound() { const nr = { scores: {} }; let a = false; players.forEach(p => { const v = parseInt(document.getElementById(`batch-${p.id}`).value); if(!isNaN(v)){ p.score += v; nr.scores[p.id] = v; document.getElementById(`batch-${p.id}`).value = ""; a = true; } else nr.scores[p.id] = 0; }); if(a) { rounds.push(nr); saveAndRefresh(); } }
+    function editScore(ri, pi, v) { currentEdit = { rIdx: ri, pId: pi }; document.getElementById('modalInput').value = v; openModal('editModal'); setTimeout(()=>document.getElementById('modalInput').focus(), 100); }
+    function saveModalEdit() { const v = parseInt(document.getElementById('modalInput').value); if(!isNaN(v)){ const p = players.find(x => x.id == currentEdit.pId); p.score = p.score - (rounds[currentEdit.rIdx].scores[currentEdit.pId]||0) + v; rounds[currentEdit.rIdx].scores[currentEdit.pId] = v; closeModal('editModal'); saveAndRefresh(); } }
+    function performReset(t) { if(t==='scores'){ rounds=[]; players.forEach(p=>p.score=0); } else { players=[]; rounds=[]; } activeGameId=null; closeModal('resetModal'); saveAndRefresh(); }
+    
     function openSaveModal() { if (activeGameId) { const g = savedGames.find(x => x.id == activeGameId); if(g) document.getElementById('saveGameName').value = g.name; } openModal('saveGameModal'); }
-    function confirmSaveGame(isNew) { const name = document.getElementById('saveGameName').value || "Game"; if (isNew || !activeGameId) { const id = Date.now(); savedGames.push({ id, name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)), date: new Date().toLocaleString() }); activeGameId = id; } else { const idx = savedGames.findIndex(g => g.id == activeGameId); if (idx !== -1) savedGames[idx] = { ...savedGames[idx], name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)) }; } localStorage.setItem('v38_library', JSON.stringify(savedGames)); closeModal('saveGameModal'); saveAndRefresh(); }
-    function openLibrary() { const list = document.getElementById('saveList'); list.innerHTML = savedGames.map((g, i) => `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--border)"><div style="flex:1; text-align:left;" onclick="loadGame(${i})"><b>${g.name}</b><br><small>${g.date}</small></div><button onclick="askDeleteSave(${i})" style="background:#e74c3c; padding:8px 12px; border-radius:5px;">🗑️</button></div>`).join('') || "Empty Library"; openModal('libraryModal'); }
-    function loadGame(i) { players = JSON.parse(JSON.stringify(savedGames[i].players)); rounds = JSON.parse(JSON.stringify(savedGames[i].rounds)); activeGameId = savedGames[i].id; closeModal('libraryModal'); saveAndRefresh(); }
-    function askDeleteSave(i) { showConfirm("Delete Save", "Permanently delete this file?", () => { if (savedGames[i].id == activeGameId) activeGameId = null; savedGames.splice(i, 1); localStorage.setItem('v38_library', JSON.stringify(savedGames)); openLibrary(); saveAndRefresh(); }); }
+    function confirmSaveGame(isNew) { const name = document.getElementById('saveGameName').value || "Game"; const snapshot = { id: isNew ? Date.now() : (activeGameId || Date.now()), name, players: JSON.parse(JSON.stringify(players)), rounds: JSON.parse(JSON.stringify(rounds)), date: new Date().toLocaleString() }; if (isNew || !activeGameId) { savedGames.push(snapshot); activeGameId = snapshot.id; } else { const idx = savedGames.findIndex(g => g.id == activeGameId); savedGames[idx] = snapshot; } localStorage.setItem('v56_library', JSON.stringify(savedGames)); closeModal('saveGameModal'); saveAndRefresh(); }
+    
+    function openLibrary() { 
+        document.getElementById('saveList').innerHTML = savedGames.map((g, i) => `
+            <div style="display:flex; align-items:center; gap:8px; padding:12px; border-bottom:1px solid var(--border);">
+                <div class="lib-item-link" style="flex:1" onclick="checkBeforeLoad(${i})"><b>${g.name}</b><br><small>${g.date}</small></div>
+                <button onclick="exportToCSV(${i})" style="background:#27ae60; padding:6px 10px; font-size:12px">📥</button>
+                <button onclick="askDeleteSave(${i})" style="background:#e74c3c; padding:6px 10px; font-size:12px">🗑️</button>
+            </div>`).join('') || "Empty"; 
+        openModal('libraryModal'); 
+    }
+
+    function checkBeforeLoad(i) {
+        // Find if our current session is already saved in the library
+        const currentInLibrary = savedGames.find(g => g.id == activeGameId);
+        
+        // A session is "dirty" if:
+        // 1. It's a new session (not in library) and has players/rounds
+        // 2. It is a library game but current data differs from the stored version
+        const isDirty = !currentInLibrary ? (players.length > 0 || rounds.length > 0) :
+                        (JSON.stringify(currentInLibrary.players) !== JSON.stringify(players) || 
+                         JSON.stringify(currentInLibrary.rounds) !== JSON.stringify(rounds));
+
+        // Close Library instantly so the user sees the confirmation prompt
+        closeModal('libraryModal');
+
+        if (isDirty) {
+            showConfirm("Unsaved Changes", "Your current session has unsaved changes. Discard them and open this game?", () => loadGame(i));
+        } else {
+            loadGame(i);
+        }
+    }
+
+    function loadGame(i) { 
+        players = JSON.parse(JSON.stringify(savedGames[i].players)); 
+        rounds = JSON.parse(JSON.stringify(savedGames[i].rounds)); 
+        activeGameId = savedGames[i].id; 
+        saveAndRefresh(); 
+    }
+
+    function exportToCSV(i) { const g = savedGames[i]; let c = "Round," + g.players.map(p => p.name).join(",") + "\n"; g.rounds.forEach((r, idx) => { c += `R${idx+1},` + g.players.map(p => r.scores[p.id] || 0).join(",") + "\n"; }); const blob = new Blob([c], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${g.name}.csv`; a.click(); }
+    function askDeleteSave(i) { showConfirm("Delete", "Delete file?", () => { if(savedGames[i].id == activeGameId) activeGameId = null; savedGames.splice(i,1); localStorage.setItem('v56_library', JSON.stringify(savedGames)); openLibrary(); saveAndRefresh(); }); }
+    function showConfirm(t, tx, a) { document.getElementById('confirmTitle').innerText = t; document.getElementById('confirmText').innerText = tx; document.getElementById('confirmActionBtn').onclick = () => { a(); closeModal('confirmModal'); }; openModal('confirmModal'); }
+    function askDeletePlayer(id, n) { showConfirm("Delete", `Remove ${n}?`, () => { players = players.filter(p => p.id !== id); saveAndRefresh(); }); }
+    function askDeleteRound(i) { showConfirm("Delete", `Delete Round ${i+1}?`, () => { const r = rounds[i]; players.forEach(p => p.score -= (r.scores[p.id] || 0)); rounds.splice(i, 1); saveAndRefresh(); }); }
 
     render();
 </script>
