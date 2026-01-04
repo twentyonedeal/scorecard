@@ -122,6 +122,7 @@
 
     if (isDark) document.body.classList.add('dark-mode');
 
+    // Key Listeners
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             const active = document.activeElement;
@@ -133,6 +134,17 @@
         }
     });
 
+    // Offline Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                const cacheName = 'score-v61';
+                self.addEventListener('install', e => e.waitUntil(caches.open(cacheName).then(c => c.addAll(['./', 'index.html', 'apple-touch-icon.png']))));
+                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+            `));
+        });
+    }
+    
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v57_dark', isDark); }
