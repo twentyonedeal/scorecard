@@ -387,8 +387,12 @@
 function updateVisibility() {
         const isChecked = document.getElementById('toggleNumbers').checked;
 		if(isChecked)
-			{document.documentElement.style.setProperty('--hideNum', 'green');}
-		else
+{
+			if (isDark) document.documentElement.style.setProperty('--hideNum', '#f0f2f5');
+				else
+					document.documentElement.style.setProperty('--hideNum', '#121212');
+
+			}		else
 			{
 			if (isDark) document.documentElement.style.setProperty('--hideNum', '#121212');
 				else
