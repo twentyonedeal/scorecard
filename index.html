@@ -111,7 +111,7 @@
         <button onclick="addPlayer()" style="background:var(--accent); color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold;">Add</button>
     </div>
        <div class="section-title">
-	   <span>🏆 L</span>
+	   <span>🏆 Leader Board</span>
 			<div class="controls">
         <label>
             <input type="checkbox" style="cursor: pointer;" id="toggleNumbers" checked onchange="updateVisibility()"> 
@@ -303,7 +303,7 @@
                 <td onclick="askDelP(${p.id})" style="width:22px; text-align:right; opacity:0.6;">🗑️</td>
                 <td style="text-align:right; font-size:0.7rem; color:var(--hideNum); width:22px;">${lastRound ? (lastRound.scores[p.id] >= 0 ? '+' : '') + lastRound.scores[p.id] : ''}</td>
                 <td style="text-align:right; font-weight:bold; padding-right:10px; width:50px;">${p.score}</td>
-                <td class="col-batch"><input type="number" id="b-${p.id}" placeholder="+" style="width:65px; padding:8px; border:2px solid ${p.color}"><span class="calc-trigger"
+                <td class="col-batch"><input type="number" pattern="[0-9]*" id="b-${p.id}" placeholder="+" style="width:65px; padding:8px; border:2px solid ${p.color}"><span class="calc-trigger"
 				onclick="openCalc('b-${p.id}')">🧮</span>
 				</td>
             </tr>`).join('');
