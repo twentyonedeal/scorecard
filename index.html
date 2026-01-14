@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   	<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Js ScoreCard V102</title>
+    <title>Js ScoreCard V102G</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Scorecard">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-    <link rel="manifest" href='data:application/manifest+json,{
-        "name": "Js ScoreCard V102",
-        "short_name": "Scorecard",
-        "start_url": ".",
-        "display": "standalone",
-        "background_color": "#f0f2f5",
-        "theme_color": "#27ae60",
-        "icons": [
-            {
-                "src": "apple-touch-icon.png",
-                "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "apple-touch-icon.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }
-        ]
+<meta name="theme-color" content="#27ae60">
+<link rel="manifest" href='data:application/manifest+json,{
+	"name": "Js ScoreCard V102",
+	"short_name": "Scorecard",
+	"start_url": "index.html",
+	"display": "standalone",
+	"background_color": "#f0f2f5",
+	"theme_color": "#27ae60",
+	"icons": [
+        {
+        "src": "apple-touch-icon.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+        },
+        {
+        "src": "apple-touch-icon.png",
+        "sizes": "512x512",
+        "type": "image/png"
+        }
+			]
     }'>
 
    <style>
         * { box-sizing: border-box; }
-        :root { --hideNum: blue; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
+        :root { --hideNum: #121212; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
         .dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; --accent: #2ecc71; --total-bg: #2d2d2d; }
                
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
-        .container { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; margin: auto; }
+        .container { background: var(--card); padding: 12px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; margin: auto; }
               
 			  
         button, .circle-color-picker, .square-color-picker, b, .score-cell, 
@@ -48,8 +49,8 @@
         #offlineTag { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .online { background: #27ae60; color: white; }
         .offline { background: #e67e22; color: white; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: var(--card); padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; max-height: 85vh; overflow-y: auto; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
 
         #confirmModal { z-index: 2001; } 
         
@@ -91,11 +92,14 @@
             <span id="offlineTag">Checking...</span>
 
 
-    <div class="win-toggle-container">
-        <span>High Wins</span>
-        <label class="switch"><input type="checkbox" id="winConditionToggle" onchange="toggleWinCondition()"><span class="slider"></span></label>
-        <span>Low Wins</span>
-    </div>
+   <div class="win-toggle-container">
+    <span id="highWinsLabel" style="color: #27ae60; font-weight: bold;">High Wins</span>
+    <label class="switch">
+        <input type="checkbox" id="winConditionToggle" onchange="toggleWinCondition()">
+        <span class="slider"></span>
+    </label>
+    <span id="lowWinsLabel" style="color: grey;">Low Wins</span>
+</div>
 
     <div id="winnerSpotlight" style="text-align:center; padding:10px; margin-bottom:15px; border-radius:10px; font-weight:bold; display:none; color: black;"></div>
 
@@ -189,6 +193,12 @@
 <div id="toast"></div>
 
 <script>
+
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('sw.js');
+		}
+
+
     let players = JSON.parse(localStorage.getItem('v102_p')) || [];
     let rounds = JSON.parse(localStorage.getItem('v102_r')) || [];
     let library = JSON.parse(localStorage.getItem('v102_l')) || [];
@@ -212,7 +222,31 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000); }
     function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v102_dark', isDark); updateVisibility();}
-    function toggleWinCondition() { lowScoreWins = document.getElementById('winConditionToggle').checked; localStorage.setItem('v102_lowWins', lowScoreWins); render(); }
+    function toggleWinCondition() { lowScoreWins = document.getElementById('winConditionToggle').checked; localStorage.setItem('v102_lowWins', lowScoreWins);
+
+    const isLowWins = document.getElementById('winConditionToggle').checked;
+    const highLabel = document.getElementById('highWinsLabel');
+    const lowLabel = document.getElementById('lowWinsLabel');
+
+    if (isLowWins) {
+        // Slider is to the RIGHT
+        lowLabel.style.color = "#e67e22"; // Orange
+        lowLabel.style.fontWeight = "bold";
+        
+        highLabel.style.color = "grey";
+        highLabel.style.fontWeight = "normal";
+    } else {
+        // Slider is to the LEFT
+        highLabel.style.color = "#27ae60"; // Green
+        highLabel.style.fontWeight = "bold";
+        
+        lowLabel.style.color = "grey";
+        lowLabel.style.fontWeight = "normal";
+    }
+
+
+
+	render(); }
 
     function getRandomColor() {
         const colors = ['#42f5dd', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6', '#e67e22', '#f0f70f', '#34495e', '42c8f5'];
@@ -300,9 +334,9 @@
                 <td style="width:30px; text-align:center;font-weight:bold;">${i+1}</td>
                 <td style="width:35px;"><div class="circle-color-picker" style="background:${p.color}; width:22px; height:22px; border-radius:50%;" onclick="openColorPicker('edit', ${p.id})"></div></td>
                 <td><b onclick="openRename(${p.id})">${p.name}</b></td>
-                <td onclick="askDelP(${p.id})" style="width:22px; text-align:right; opacity:0.6;">🗑️</td>
-                <td style="text-align:right; font-size:0.7rem; color:var(--hideNum); width:22px;">${lastRound ? (lastRound.scores[p.id] >= 0 ? '+' : '') + lastRound.scores[p.id] : ''}</td>
-                <td style="text-align:right; font-weight:bold; padding-right:10px; width:50px;">${p.score}</td>
+                <td onclick="askDelP(${p.id})" style="width:23px; text-align:right; opacity:0.6;">🗑️</td>
+                <td style="text-align:right; font-size:0.7rem; color:var(--hideNum); width:22px;">${lastRound ? `(${lastRound.scores[p.id]})` : ''}</td>
+                <td style="text-align:right; font-weight:bold; padding-right:5px; width:60px;">${p.score}</td>
                 <td class="col-batch"><input type="number" pattern="[0-9]*" id="b-${p.id}" placeholder="+" style="width:65px; padding:8px; border:2px solid ${p.color}"><span class="calc-trigger"
 				onclick="openCalc('b-${p.id}')">🧮</span>
 				</td>
