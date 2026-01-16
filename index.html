@@ -11,28 +11,9 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <meta name="theme-color" content="#27ae60">
-<link rel="manifest" href='data:application/manifest+json,{
-	"name": "Js ScoreCard V102",
-	"short_name": "Scorecard",
-	"start_url": "index.html",
-	"display": "standalone",
-	"background_color": "#f0f2f5",
-	"theme_color": "#27ae60",
-	"icons": [
-        {
-        "src": "apple-touch-icon.png",
-        "sizes": "192x192",
-        "type": "image/png",
-        "purpose": "any maskable"
-        },
-        {
-        "src": "apple-touch-icon.png",
-        "sizes": "512x512",
-        "type": "image/png"
-        }
-			]
-    }'>
+<link rel="manifest" href="manifest.json">
 
+	
    <style>
         * { box-sizing: border-box; }
         :root { --hideNum: #121212; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
@@ -194,9 +175,13 @@
 
 <script>
 
-	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register('sw.js');
-		}
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker Registered'))
+        .catch(err => console.log('Service Worker Failed', err));
+    });
+  }
 
 
     let players = JSON.parse(localStorage.getItem('v102_p')) || [];
