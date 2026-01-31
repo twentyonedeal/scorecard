@@ -4,57 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <title>Js ScoreCard V111</title>
-    <link rel="manifest" href="manifest.json">
-	<meta name="apple-mobile-web-app-capable" content="yes">
+  	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<meta name="apple-mobile-web-app-title" content="Scorecard">
-	<link rel="apple-touch-icon" href="apple-touch-icon.png">
 	<meta name="theme-color" content="#4B0082">
-<style>
-/* Add this to your styles.css */
-html, body {
-    background-color: #4B0082; /* Your deep purple */
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
-header {
-    background-color: #4B0082;
-    /* This adds padding ONLY at the top, specifically 
-       matching the height of the iPhone status bar */
-    padding-top: env(safe-area-inset-top); 
-}
-body {
+	<link rel="apple-touch-icon" href="apple-touch-icon.png">
+	<link rel="manifest" href="manifest.json">
+	
+	<style>
+	/* Add this to your styles.css */
+	html, body {
+    	background-color: #4B0082; /* Your deep purple */
+    	margin: 0;
+    	padding: 0;
+    	min-height: 100vh;
+		}
+	
+	header {
+    	background-color: #4B0082;
+    	/* This adds padding ONLY at the top, specifically 
+       		matching the height of the iPhone status bar */
+    	padding-top: env(safe-area-inset-top); 
+		}
+	
+	body {
 		/* Pushes all content down so it starts below the status bar */
 		padding-top: env(safe-area-inset-top);
-			}
-/* Create a top bar that covers the status area */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    /* The magic variable that matches the height of the notch/clock */
-    height: env(safe-area-inset-top); 
-    background-color: #4B0082; /* Your deep purple */
-    z-index: 9999; /* Keeps it above everything else */
-}
+		}
+
+	/* Create a top bar that covers the status area */
+	body::before {
+    	content: "";
+    	position: fixed;
+    	top: 0;
+    	left: 0;
+    	width: 100%;
+    	/* The magic variable that matches the height of the notch/clock */
+    	height: env(safe-area-inset-top); 
+    	background-color: #4B0082; /* Your deep purple */
+    	z-index: 9999; /* Keeps it above everything else */
+		}
 	/* Push your actual content down so it doesn't hide behind the purple shelf */
-header, #container {
-	padding-top: env(safe-area-inset-top);
-	}
+
+	header, #container {
+		padding-top: env(safe-area-inset-top);
+		}
 	
-        * { box-sizing: border-box; }
-        :root { --hideNum: "white"; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
-        .dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; --accent: #2ecc71; --total-bg: #2d2d2d; }
+    * { box-sizing: border-box; }
+    :root { --hideNum: "white"; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
+    .dark-mode { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; --accent: #2ecc71; --total-bg: #2d2d2d; }
                
-        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
-        .container { background: var(--card); padding: 12px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; margin: auto; }
+    body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; -webkit-tap-highlight-color: transparent; }
+    .container { background: var(--card); padding: 12px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); max-width: 500px; margin: auto; }
          
-		.hide-column .toggle-col {
-			display: none;
-			}	 
+	.hide-column .toggle-col {
+		display: none;
+		}	 
 			  
         button, .circle-color-picker, .square-color-picker, b, .score-cell, 
         .del-round-btn, .trash-btn, td[onclick], span[onclick] { cursor: pointer; }
@@ -103,34 +108,32 @@ header, #container {
 			}
         input[type="number"], input[type="text"] { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); }
         #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; z-index: 4000; pointer-events: none; }
-/* The actual movement: left to right quickly */
-@keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-8px); }
-    50% { transform: translateX(8px); }
-    75% { transform: translateX(-8px); }
-    100% { transform: translateX(0); }
-}
 
-/* The class we will add via JavaScript */
-.shake-error {
-    animation: shake 0.3s ease-in-out;
-    border: 2px solid #e74c3c !important; /* Optional: flash the border red too */
-}
+		/* The actual movement: left to right quickly */
+		@keyframes shake {
+    		0% { transform: translateX(0); }
+    		25% { transform: translateX(-8px); }
+    		50% { transform: translateX(8px); }
+    		75% { transform: translateX(-8px); }
+    		100% { transform: translateX(0); }
+			}
 
+		/* The class we will add via JavaScript */
+		.shake-error {
+    		animation: shake 0.3s ease-in-out;
+    		border: 2px solid #e74c3c !important; /* Optional: flash the border red too */
+			}
 		
     </style>
 </head>
+
 <body>
 <div class="container">
     <h1 style="text-align:center; font-size: 1.5rem; margin:0 0 5px 0;">Jay's Ultimate Scorecard</h1>
-    <div style="text-align:center;  font-size: .75rem; margin:0 0 5px 0;">v111C</div>
-    <div id="activeGameLabel" style="font-size: 0.75rem; text-align: center; margin-bottom:5px;"></div>
+    <div style="text-align:center;  font-size: .75rem; margin:0 0 5px 0;">v111D</div>
+  
+	<div id="activeGameLabel" style="font-size: 0.75rem; text-align: center; margin-bottom:5px;"></div>
             <span style="display: inline-block; margin-bottom:10px;" id="offlineTag">Checking...</span>
-
-
-
-
 
     <div style="display:grid; grid-template-columns: 1fr 1fr 44px; gap:8px; margin-bottom:15px;">
         <button onclick="openSaveModal()" style="background:#3498db; color:white; border:none; border-radius:8px; padding:12px;">💾 Save</button>
