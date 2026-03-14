@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-    <title>Js ScoreCard V112</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Js ScoreCard V111</title>
   	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
 	<meta name="apple-mobile-web-app-title" content="Scorecard">
 	<meta name="theme-color" content="#4B0082">
 	<link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -19,7 +19,14 @@
     	padding: 0;
     	min-height: 100vh;
 		}
-		
+	
+	header {
+    	background-color: #4B0082;
+    	/* This adds padding ONLY at the top, specifically 
+       		matching the height of the iPhone status bar */
+    	padding-top: env(safe-area-inset-top); 
+		}
+	
 	body {
 		/* Pushes all content down so it starts below the status bar */
 		padding-top: env(safe-area-inset-top);
@@ -39,6 +46,9 @@
 		}
 	/* Push your actual content down so it doesn't hide behind the purple shelf */
 
+	header, #container {
+		padding-top: env(safe-area-inset-top);
+		}
 	
     * { box-sizing: border-box; }
     :root { --hideNum: "white"; --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --border: #ced4da; --accent: #27ae60; --total-bg: #e2e6ea; }
@@ -120,7 +130,7 @@
 <body>
 <div class="container">
     <h1 style="text-align:center; font-size: 1.5rem; margin:0 0 5px 0;">Jay's Ultimate Scorecard</h1>
-    <div style="text-align:center;  font-size: .75rem; margin:0 0 5px 0;">v112</div>
+    <div style="text-align:center;  font-size: .75rem; margin:0 0 5px 0;">v111D</div>
   
 	<div id="activeGameLabel" style="font-size: 0.75rem; text-align: center; margin-bottom:5px;"></div>
             <span style="display: inline-block; margin-bottom:10px;" id="offlineTag">Checking...</span>
@@ -314,7 +324,7 @@ style="max-width:380px; border-top: 5px solid #e74c3c; display: flex; flex-direc
     window.addEventListener('online', updateStatus); window.addEventListener('offline', updateStatus); updateStatus();
 
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex';  touch-action: manipulation;}
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000); }
     function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v102_dark', isDark);}
