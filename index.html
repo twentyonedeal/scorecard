@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
-	<title>Js ScoreCard V112</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <title>Js ScoreCard V112</title>
   	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<meta name="apple-mobile-web-app-title" content="Scorecard">
@@ -38,11 +38,6 @@
     	z-index: 9999; /* Keeps it above everything else */
 		}
 	/* Push your actual content down so it doesn't hide behind the purple shelf */
-
-	/* This is suppose to stop the double tap from zooming */
-		html {
-  			touch-action: manipulation;
-			}
 
 	
     * { box-sizing: border-box; }
@@ -319,7 +314,7 @@ style="max-width:380px; border-top: 5px solid #e74c3c; display: flex; flex-direc
     window.addEventListener('online', updateStatus); window.addEventListener('offline', updateStatus); updateStatus();
 
 
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex';  touch-action: manipulation;}
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2000); }
     function toggleDarkMode() { isDark = !isDark; document.body.classList.toggle('dark-mode'); localStorage.setItem('v102_dark', isDark);}
