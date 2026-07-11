@@ -6,8 +6,10 @@ const ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './apple-touch-icon.png'
+  './apple-touch-icon.png',
+  './help-content.html'
 ];
+
 
 // 1. Install: Open cache and save all assets
 self.addEventListener('install', (event) => {
